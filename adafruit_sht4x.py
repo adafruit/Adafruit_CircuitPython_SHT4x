@@ -79,7 +79,7 @@ Mode.add_values(
         )
 )
 
-    
+
 class SHT4x:
     """
     A driver for the SHT4x temperature and humidity sensor.
@@ -92,10 +92,12 @@ class SHT4x:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, _SHT4X_DEFAULT_ADDR)
         self._buffer = bytearray(6)
         self.reset()
-        self._mode = Mode.NOHEAT_HIGHPRECISION
+        self._mode = Mode.NOHEAT_HIGHPRECISION # pylint: disable=no-member
+
 
     @property
     def serial_number(self):
+        """The unique 32-bit serial number"""
         self._buffer[0] = _SHT4X_READSERIAL
         with self.i2c_device as i2c:
             i2c.write(self._buffer, end=1)
@@ -119,12 +121,11 @@ class SHT4x:
         self._buffer[0] = _SHT4X_SOFTRESET
         with self.i2c_device as i2c:
             i2c.write(self._buffer, end=1)
-        
         time.sleep(0.001)
 
     @property
     def mode(self):
-        """Returns current sensor reading mode (heater and precision)"""
+        """The current sensor reading mode (heater and precision)"""
         return self._mode
 
     @mode.setter
@@ -141,7 +142,7 @@ class SHT4x:
 
     @property
     def temperature(self):
-        """The current temperature in degrees celcius"""
+        """The current temperature in degrees celsius"""
         return self.measurements[0]
 
     @property
@@ -151,7 +152,7 @@ class SHT4x:
         temperature = None
         humidity = None
         command = self._mode
-        
+
         with self.i2c_device as i2c:
             self._buffer[0] = command
             i2c.write(self._buffer, end=1)
