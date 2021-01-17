@@ -39,16 +39,47 @@ _SHT4X_DEFAULT_ADDR = const(0x44)  # SHT4X I2C Address
 _SHT4X_READSERIAL = const(0x89) # Read Out of Serial Register
 _SHT4X_SOFTRESET = const(0x94)  # Soft Reset
 
-_SHT4x_NOHEAT_HIGHPRECISION = const(0xFD)
-_SHT4x_NOHEAT_MEDPRECISION = const(0xF6)
-_SHT4x_NOHEAT_LOWPRECISION = const(0xE0)
-_SHT4x_HIGHHEAT_1S = const(0x39)                           
-_SHT4x_HIGHHEAT_100MS= const(0x32)
-_SHT4x_MEDHEAT_1S = const(0x2F)
-_SHT4x_MEDHEAT_100MS = const(0x24)
-_SHT4x_LOWHEAT_1S = const(0x1E)
-_SHT4x_LOWHEAT_100MS = const(0x15)
-  
+
+
+class CV:
+    """struct helper"""
+    @classmethod
+    def add_values(cls, value_tuples):
+        """Add CV values to the class"""
+        cls.string = {}
+        cls.delay = {}
+
+        for value_tuple in value_tuples:
+            name, value, string, delay = value_tuple
+            setattr(cls, name, value)
+            cls.string[value] = string
+            cls.delay[value] = delay
+
+    @classmethod
+    def is_valid(cls, value):
+        """Validate that a given value is a member"""
+        return value in cls.string
+
+class Mode(CV):
+    """Options for ``power_mode``"""
+    pass  # pylint: disable=unnecessary-pass
+
+
+Mode.add_values(
+    (
+        ("NOHEAT_HIGHPRECISION", 0xFD, "No heater, high precision", 0.01),
+        ("NOHEAT_MEDPRECISION", 0xF6, "No heater, med precision", 0.005),
+        ("NOHEAT_LOWPRECISION", 0xE0, "No heater, low precision", 0.002),
+        ("HIGHHEAT_1S", 0x39, "High heat, 1 second", 1.1),
+        ("HIGHHEAT_100MS", 0x32, "High heat, 0.1 second", 0.11),
+        ("MEDHEAT_1S", 0x2F, "Med heat, 1 second", 1.1),
+        ("MEDHEAT_100MS", 0x24, "Med heat, 0.1 second", 0.11),
+        ("LOWHEAT_1S", 0x1E, "Low heat, 1 second", 1.1),
+        ("LOWHEAT_100MS", 0x15, "Low heat, 0.1 second", 0.11),
+        )
+)
+
+    
 class SHT4x:
     """
     A driver for the SHT4x temperature and humidity sensor.
@@ -61,6 +92,7 @@ class SHT4x:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, _SHT4X_DEFAULT_ADDR)
         self._buffer = bytearray(6)
         self.reset()
+        self._mode = Mode.NOHEAT_HIGHPRECISION
 
     @property
     def serial_number(self):
@@ -91,6 +123,18 @@ class SHT4x:
         time.sleep(0.001)
 
     @property
+    def mode(self):
+        """Returns current sensor reading mode (heater and precision)"""
+        return self._mode
+
+    @mode.setter
+    def mode(self, new_mode):
+        print(new_mode)
+        if not Mode.is_valid(new_mode):
+            raise AttributeError("mode must be a Mode")
+        self._mode = new_mode
+
+    @property
     def relative_humidity(self):
         """The current relative humidity in % rH"""
         return self.measurements[1]
@@ -106,12 +150,12 @@ class SHT4x:
 
         temperature = None
         humidity = None
-        command = _SHT4x_NOHEAT_HIGHPRECISION
+        command = self._mode
         
         with self.i2c_device as i2c:
             self._buffer[0] = command
             i2c.write(self._buffer, end=1)
-            time.sleep(0.1)
+            time.sleep(Mode.delay[self._mode])
             i2c.readinto(self._buffer)
 
         # separate the read data
