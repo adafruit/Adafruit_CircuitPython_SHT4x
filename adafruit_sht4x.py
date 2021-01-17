@@ -36,13 +36,13 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_SHT4x.git"
 
 
 _SHT4X_DEFAULT_ADDR = const(0x44)  # SHT4X I2C Address
-_SHT4X_READSERIAL = const(0x89) # Read Out of Serial Register
+_SHT4X_READSERIAL = const(0x89)  # Read Out of Serial Register
 _SHT4X_SOFTRESET = const(0x94)  # Soft Reset
-
 
 
 class CV:
     """struct helper"""
+
     @classmethod
     def add_values(cls, value_tuples):
         """Add CV values to the class"""
@@ -60,8 +60,10 @@ class CV:
         """Validate that a given value is a member"""
         return value in cls.string
 
+
 class Mode(CV):
     """Options for ``power_mode``"""
+
     pass  # pylint: disable=unnecessary-pass
 
 
@@ -76,7 +78,7 @@ Mode.add_values(
         ("MEDHEAT_100MS", 0x24, "Med heat, 0.1 second", 0.11),
         ("LOWHEAT_1S", 0x1E, "Low heat, 1 second", 1.1),
         ("LOWHEAT_100MS", 0x15, "Low heat, 0.1 second", 0.11),
-        )
+    )
 )
 
 
@@ -92,8 +94,7 @@ class SHT4x:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, _SHT4X_DEFAULT_ADDR)
         self._buffer = bytearray(6)
         self.reset()
-        self._mode = Mode.NOHEAT_HIGHPRECISION # pylint: disable=no-member
-
+        self._mode = Mode.NOHEAT_HIGHPRECISION  # pylint: disable=no-member
 
     @property
     def serial_number(self):
@@ -175,11 +176,11 @@ class SHT4x:
         # convert bytes into 16-bit signed integer
         # convert the LSB value to a human value according to the datasheet
         temperature = struct.unpack_from(">H", temp_data)[0]
-        temperature = -45.0 + 175.0 * temperature/65535.0
+        temperature = -45.0 + 175.0 * temperature / 65535.0
 
         # repeat above steps for humidity data
         humidity = struct.unpack_from(">H", humidity_data)[0]
-        humidity = -6.0 + 125.0 * humidity/65535.0
+        humidity = -6.0 + 125.0 * humidity / 65535.0
         humidity = max(min(humidity, 100), 0)
 
         return (temperature, humidity)
