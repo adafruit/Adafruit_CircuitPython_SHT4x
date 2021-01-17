@@ -27,6 +27,7 @@ Python library for Sensirion SHT4x temperature and humidity sensors
 """
 
 import time
+import struct
 import adafruit_bus_device.i2c_device as i2c_device
 from micropython import const
 
@@ -38,6 +39,16 @@ _SHT4X_DEFAULT_ADDR = const(0x44)  # SHT4X I2C Address
 _SHT4X_READSERIAL = const(0x89) # Read Out of Serial Register
 _SHT4X_SOFTRESET = const(0x94)  # Soft Reset
 
+_SHT4x_NOHEAT_HIGHPRECISION = const(0xFD)
+_SHT4x_NOHEAT_MEDPRECISION = const(0xF6)
+_SHT4x_NOHEAT_LOWPRECISION = const(0xE0)
+_SHT4x_HIGHHEAT_1S = const(0x39)                           
+_SHT4x_HIGHHEAT_100MS= const(0x32)
+_SHT4x_MEDHEAT_1S = const(0x2F)
+_SHT4x_MEDHEAT_100MS = const(0x24)
+_SHT4x_LOWHEAT_1S = const(0x1E)
+_SHT4x_LOWHEAT_100MS = const(0x15)
+  
 class SHT4x:
     """
     A driver for the SHT4x temperature and humidity sensor.
@@ -50,13 +61,6 @@ class SHT4x:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, _SHT4X_DEFAULT_ADDR)
         self._buffer = bytearray(6)
         self.reset()
-
-    def _write_command(self, command):
-        self._buffer[0] = command >> 8
-        self._buffer[1] = command & 0xFF
-
-        with self.i2c_device as i2c:
-            i2c.write(self._buffer, start=0, end=2)
 
     @property
     def serial_number(self):
@@ -87,31 +91,6 @@ class SHT4x:
         time.sleep(0.001)
 
     @property
-    def sleeping(self):
-        """Determines the sleep state of the sensor"""
-        return self._cached_sleep
-
-    @sleeping.setter
-    def sleeping(self, sleep_enabled):
-        if sleep_enabled:
-            self._write_command(_SHTC3_SLEEP)
-        else:
-            self._write_command(_SHTC3_WAKEUP)
-        time.sleep(0.001)
-        self._cached_sleep = sleep_enabled
-
-    # lowPowerMode(bool readmode) { _lpMode = readmode
-
-    @property
-    def low_power(self):
-        """Enables the less accurate low power mode, trading accuracy for power consumption"""
-        return self._low_power
-
-    @low_power.setter
-    def low_power(self, low_power_enabled):
-        self._low_power = low_power_enabled
-
-    @property
     def relative_humidity(self):
         """The current relative humidity in % rH"""
         return self.measurements[1]
@@ -125,20 +104,14 @@ class SHT4x:
     def measurements(self):
         """both `temperature` and `relative_humidity`, read simultaneously"""
 
-        self.sleeping = False
         temperature = None
         humidity = None
-        # send correct command for the current power state
-        if self.low_power:
-            self._write_command(_SHTC3_LOWPOW_MEAS_TFIRST)
-            time.sleep(0.001)
-        else:
-            self._write_command(_SHTC3_NORMAL_MEAS_TFIRST)
-            time.sleep(0.013)
-
-        # self._buffer = bytearray(6)
-        # read the measured data into our buffer
+        command = _SHT4x_NOHEAT_HIGHPRECISION
+        
         with self.i2c_device as i2c:
+            self._buffer[0] = command
+            i2c.write(self._buffer, end=1)
+            time.sleep(0.1)
             i2c.readinto(self._buffer)
 
         # separate the read data
@@ -151,21 +124,19 @@ class SHT4x:
         if temp_crc != self._crc8(temp_data) or humidity_crc != self._crc8(
             humidity_data
         ):
-            return (temperature, humidity)
+            raise RuntimeError("Invalid CRC calculated")
 
         # decode data into human values:
         # convert bytes into 16-bit signed integer
         # convert the LSB value to a human value according to the datasheet
-        raw_temp = unpack_from(">H", temp_data)[0]
-        raw_temp = ((4375 * raw_temp) >> 14) - 4500
-        temperature = raw_temp / 100.0
+        temperature = struct.unpack_from(">H", temp_data)[0]
+        temperature = -45.0 + 175.0 * temperature/65535.0
 
         # repeat above steps for humidity data
-        raw_humidity = unpack_from(">H", humidity_data)[0]
-        raw_humidity = (625 * raw_humidity) >> 12
-        humidity = raw_humidity / 100.0
+        humidity = struct.unpack_from(">H", humidity_data)[0]
+        humidity = -6.0 + 125.0 * humidity/65535.0
+        humidity = max(min(humidity, 100), 0)
 
-        self.sleeping = True
         return (temperature, humidity)
 
     ## CRC-8 formula from page 14 of SHTC3 datasheet
