@@ -90,8 +90,8 @@ class SHT4x:
 
     """
 
-    def __init__(self, i2c_bus):
-        self.i2c_device = i2c_device.I2CDevice(i2c_bus, _SHT4X_DEFAULT_ADDR)
+    def __init__(self, i2c_bus, address=_SHT4X_DEFAULT_ADDR):
+        self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
         self._buffer = bytearray(6)
         self.reset()
         self._mode = Mode.NOHEAT_HIGHPRECISION  # pylint: disable=no-member
