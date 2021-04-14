@@ -15,12 +15,12 @@ Implementation Notes
 
 **Hardware:**
 
-Python library for Sensirion SHT4x temperature and humidity sensors
+* Adafruit's SHT40 Temperature & Humidity Sensor: https://www.adafruit.com/product/4885
 
 **Software and Dependencies:**
 
 * Adafruit CircuitPython firmware for the supported boards:
-  https://github.com/adafruit/circuitpython/releases
+  https://circuitpython.org/downloads
 
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
@@ -86,7 +86,42 @@ class SHT4x:
     """
     A driver for the SHT4x temperature and humidity sensor.
 
-    :param ~busio.I2C i2c_bus: The `busio.I2C` object to use. This is the only required parameter.
+    :param ~busio.I2C i2c_bus: The `busio.I2C` object to use.
+    :param int address: The I2C device address for the sensor. Default is :const:`0x44`
+
+
+    **Quickstart: Importing and using the SHT4x temperature and humidity sensor**
+
+        Here is one way of importing the `SHT4x` class so you can use it with the name ``sht``.
+        First you will need to import the libraries to use the sensor
+
+        .. code-block:: python
+
+            import busio
+            import board
+            import adafruit_sht4x
+
+        Once this is done you can define your `busio.I2C` object and define your sensor object
+
+        .. code-block:: python
+
+            i2c = busio.I2C(board.SCL, board.SDA)
+            sht = adafruit_sht4x.SHT4x(i2c)
+
+        You can now make some initial settings on the sensor
+
+        .. code-block:: python
+
+            sht.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
+
+        Now you have access to the temperature and humidity using the :attr:`measurements`.
+        It will return a tuple with the :attr:`temperature` and :attr:`relative_humidity`
+        measurements
+
+
+        .. code-block:: python
+
+            temperature, relative_humidity = sht.measurements
 
     """
 
@@ -138,12 +173,12 @@ class SHT4x:
 
     @property
     def relative_humidity(self):
-        """The current relative humidity in % rH"""
+        """The current relative humidity in % rH. This is a value from 0-100%."""
         return self.measurements[1]
 
     @property
     def temperature(self):
-        """The current temperature in degrees celsius"""
+        """The current temperature in degrees Celsius"""
         return self.measurements[0]
 
     @property
@@ -191,6 +226,7 @@ class SHT4x:
 
     @staticmethod
     def _crc8(buffer):
+        """verify the crc8 checksum"""
         crc = 0xFF
         for byte in buffer:
             crc ^= byte
