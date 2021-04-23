@@ -86,26 +86,25 @@ class SHT4x:
     """
     A driver for the SHT4x temperature and humidity sensor.
 
-    :param ~busio.I2C i2c_bus: The `busio.I2C` object to use.
-    :param int address: The I2C device address for the sensor. Default is :const:`0x44`
+    :param ~busio.I2C i2c_bus: The I2C bus the SHT4x is connected to.
+    :param int address: The I2C device address. Default is :const:`0x44`
 
 
     **Quickstart: Importing and using the SHT4x temperature and humidity sensor**
 
-        Here is one way of importing the `SHT4x` class so you can use it with the name ``sht``.
+        Here is an example of using the :class:`SHT4x`.
         First you will need to import the libraries to use the sensor
 
         .. code-block:: python
 
-            import busio
             import board
             import adafruit_sht4x
 
-        Once this is done you can define your `busio.I2C` object and define your sensor object
+        Once this is done you can define your `board.I2C` object and define your sensor object
 
         .. code-block:: python
 
-            i2c = busio.I2C(board.SCL, board.SDA)
+            i2c = board.I2C()   # uses board.SCL and board.SDA
             sht = adafruit_sht4x.SHT4x(i2c)
 
         You can now make some initial settings on the sensor

@@ -23,6 +23,8 @@ Table of Contents
 .. toctree::
     :caption: Tutorials
 
+    Adafruit Sensirion SHT40 Temperature & Humidity Sensor <https://learn.adafruit.com/adafruit-sht40-temperature-humidity-sensor>
+
 .. toctree::
     :caption: Related Products
 
