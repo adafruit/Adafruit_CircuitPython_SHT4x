@@ -6,7 +6,7 @@ import time
 import board
 import adafruit_sht4x
 
-i2c = board.I2C()
+i2c = board.I2C()  # uses board.SCL and board.SDA
 sht = adafruit_sht4x.SHT4x(i2c)
 print("Found SHT4x with serial number", hex(sht.serial_number))
 

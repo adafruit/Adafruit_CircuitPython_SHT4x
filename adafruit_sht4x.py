@@ -15,14 +15,16 @@ Implementation Notes
 
 **Hardware:**
 
-* Adafruit's SHT40 Temperature & Humidity Sensor: https://www.adafruit.com/product/4885
+* `Adafruit SHT40 Temperature & Humidity Sensor
+  <https://www.adafruit.com/product/4885>`_ (Product ID: 4885)
 
 **Software and Dependencies:**
 
 * Adafruit CircuitPython firmware for the supported boards:
   https://circuitpython.org/downloads
 
-* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+* Adafruit's Bus Device library:
+  https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
 """
 
@@ -165,7 +167,7 @@ class SHT4x:
 
     @mode.setter
     def mode(self, new_mode):
-        print(new_mode)
+
         if not Mode.is_valid(new_mode):
             raise AttributeError("mode must be a Mode")
         self._mode = new_mode
