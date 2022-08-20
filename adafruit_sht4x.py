@@ -37,6 +37,7 @@ from micropython import const
 
 try:
     from typing import Tuple
+    from busio import I2C
 except ImportError:
     pass
 
@@ -134,7 +135,7 @@ class SHT4x:
     """
 
     def __init__(
-        self, i2c_bus: board.I2C(), address: int = _SHT4X_DEFAULT_ADDR
+        self, i2c_bus: I2C, address: int = _SHT4X_DEFAULT_ADDR
     ) -> None:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
         self._buffer = bytearray(6)
