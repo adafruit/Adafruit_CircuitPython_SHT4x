@@ -30,8 +30,6 @@ Implementation Notes
 
 import time
 import struct
-
-import board
 from adafruit_bus_device import i2c_device
 from micropython import const
 
@@ -134,9 +132,7 @@ class SHT4x:
 
     """
 
-    def __init__(
-        self, i2c_bus: I2C, address: int = _SHT4X_DEFAULT_ADDR
-    ) -> None:
+    def __init__(self, i2c_bus: I2C, address: int = _SHT4X_DEFAULT_ADDR) -> None:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
         self._buffer = bytearray(6)
         self.reset()
