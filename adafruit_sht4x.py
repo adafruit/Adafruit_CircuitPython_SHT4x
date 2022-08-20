@@ -30,8 +30,15 @@ Implementation Notes
 
 import time
 import struct
+
+import board
 from adafruit_bus_device import i2c_device
 from micropython import const
+
+try:
+    from typing import Tuple
+except ImportError:
+    pass
 
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_SHT4x.git"
@@ -46,7 +53,7 @@ class CV:
     """struct helper"""
 
     @classmethod
-    def add_values(cls, value_tuples):
+    def add_values(cls, value_tuples) -> None:
         """Add CV values to the class"""
         cls.string = {}
         cls.delay = {}
@@ -58,7 +65,7 @@ class CV:
             cls.delay[value] = delay
 
     @classmethod
-    def is_valid(cls, value):
+    def is_valid(cls, value) -> bool:
         """Validate that a given value is a member"""
         return value in cls.string
 
@@ -126,14 +133,16 @@ class SHT4x:
 
     """
 
-    def __init__(self, i2c_bus, address=_SHT4X_DEFAULT_ADDR):
+    def __init__(
+        self, i2c_bus: board.I2C(), address: int = _SHT4X_DEFAULT_ADDR
+    ) -> None:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
         self._buffer = bytearray(6)
         self.reset()
         self._mode = Mode.NOHEAT_HIGHPRECISION  # pylint: disable=no-member
 
     @property
-    def serial_number(self):
+    def serial_number(self) -> int:
         """The unique 32-bit serial number"""
         self._buffer[0] = _SHT4X_READSERIAL
         with self.i2c_device as i2c:
@@ -153,7 +162,7 @@ class SHT4x:
         serial = (ser1[0] << 24) + (ser1[1] << 16) + (ser2[0] << 8) + ser2[1]
         return serial
 
-    def reset(self):
+    def reset(self) -> None:
         """Perform a soft reset of the sensor, resetting all settings to their power-on defaults"""
         self._buffer[0] = _SHT4X_SOFTRESET
         with self.i2c_device as i2c:
@@ -161,29 +170,29 @@ class SHT4x:
         time.sleep(0.001)
 
     @property
-    def mode(self):
+    def mode(self) -> int:
         """The current sensor reading mode (heater and precision)"""
         return self._mode
 
     @mode.setter
-    def mode(self, new_mode):
+    def mode(self, new_mode: int) -> None:
 
         if not Mode.is_valid(new_mode):
             raise AttributeError("mode must be a Mode")
         self._mode = new_mode
 
     @property
-    def relative_humidity(self):
+    def relative_humidity(self) -> float:
         """The current relative humidity in % rH. This is a value from 0-100%."""
         return self.measurements[1]
 
     @property
-    def temperature(self):
+    def temperature(self) -> float:
         """The current temperature in degrees Celsius"""
         return self.measurements[0]
 
     @property
-    def measurements(self):
+    def measurements(self) -> Tuple[float, float]:
         """both `temperature` and `relative_humidity`, read simultaneously"""
 
         temperature = None
@@ -226,7 +235,7 @@ class SHT4x:
     # Test data [0xBE, 0xEF] should yield 0x92
 
     @staticmethod
-    def _crc8(buffer):
+    def _crc8(buffer) -> int:
         """verify the crc8 checksum"""
         crc = 0xFF
         for byte in buffer:
