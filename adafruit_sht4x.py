@@ -52,7 +52,7 @@ class CV:
     """struct helper"""
 
     @classmethod
-    def add_values(cls, value_tuples) -> None:
+    def add_values(cls, value_tuples: Tuple[str, int, Union[float, str], Optional[float]]) -> None:
         """Add CV values to the class"""
         cls.string = {}
         cls.delay = {}
@@ -64,7 +64,7 @@ class CV:
             cls.delay[value] = delay
 
     @classmethod
-    def is_valid(cls, value) -> bool:
+    def is_valid(cls, value: str) -> bool:
         """Validate that a given value is a member"""
         return value in cls.string
 
