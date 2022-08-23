@@ -34,7 +34,7 @@ from adafruit_bus_device import i2c_device
 from micropython import const
 
 try:
-    from typing import Tuple
+    from typing import Tuple, Union, Optional
     from busio import I2C
 except ImportError:
     pass
@@ -52,7 +52,9 @@ class CV:
     """struct helper"""
 
     @classmethod
-    def add_values(cls, value_tuples: Tuple[str, int, Union[float, str], Optional[float]]) -> None:
+    def add_values(
+        cls, value_tuples: Tuple[str, int, Union[float, str], Optional[float]]
+    ) -> None:
         """Add CV values to the class"""
         cls.string = {}
         cls.delay = {}
