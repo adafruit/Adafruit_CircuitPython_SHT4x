@@ -173,7 +173,6 @@ class SHT4x:
 
     @mode.setter
     def mode(self, new_mode: int) -> None:
-
         if not Mode.is_valid(new_mode):
             raise AttributeError("mode must be a Mode")
         self._mode = new_mode
