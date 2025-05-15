@@ -28,13 +28,15 @@ Implementation Notes
 
 """
 
-import time
 import struct
+import time
+
 from adafruit_bus_device import i2c_device
 from micropython import const
 
 try:
     from typing import Tuple
+
     from busio import I2C
 except ImportError:
     pass
@@ -72,7 +74,7 @@ class CV:
 class Mode(CV):
     """Options for ``power_mode``"""
 
-    pass  # pylint: disable=unnecessary-pass
+    pass
 
 
 Mode.add_values(
@@ -136,7 +138,7 @@ class SHT4x:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
         self._buffer = bytearray(6)
         self.reset()
-        self._mode = Mode.NOHEAT_HIGHPRECISION  # pylint: disable=no-member
+        self._mode = Mode.NOHEAT_HIGHPRECISION
 
     @property
     def serial_number(self) -> int:
@@ -208,9 +210,7 @@ class SHT4x:
         humidity_crc = self._buffer[5]
 
         # check CRC of bytes
-        if temp_crc != self._crc8(temp_data) or humidity_crc != self._crc8(
-            humidity_data
-        ):
+        if temp_crc != self._crc8(temp_data) or humidity_crc != self._crc8(humidity_data):
             raise RuntimeError("Invalid CRC calculated")
 
         # decode data into human values:
