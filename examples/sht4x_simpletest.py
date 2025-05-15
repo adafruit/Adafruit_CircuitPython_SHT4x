@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: MIT
 
 import time
+
 import board
+
 import adafruit_sht4x
 
 i2c = board.I2C()  # uses board.SCL and board.SDA
