@@ -240,5 +240,5 @@ class SHT4x:
                 if crc & 0x80:
                     crc = (crc << 1) ^ 0x31
                 else:
-                    crc = crc << 1
+                    crc <<= 1
         return crc & 0xFF  # return the bottom 8 bits
